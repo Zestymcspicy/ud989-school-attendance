@@ -21,6 +21,21 @@
     }
 }());
 
+$(function() {
+    var attendance = JSON.parse(localStorage.attendance),
+        $allMissed = $('tbody .missed-col'),
+        $allCheckboxes = $('tbody input');
+
+      $.each(attendance, function(name, days) {
+          var studentRow = $('tbody .name-col:contains("' + name + '")').parent('tr'),
+              dayChecks = $(studentRow).children('.attend-col').children('input');
+
+          dayChecks.each(function(i) {
+              $(this).prop('checked', days[i]);
+          });
+      });
+    });
+
 const model = {
 
   init : function () {
@@ -52,25 +67,34 @@ const controller = {
 const view = {
 
   init : function () {
-    this.students = document.getElementsByClassName("name-col");
+    this.studentsNames = document.getElementsByClassName("name-col");
     this.daysMissedColumn = document.getElementsByClassName("missed-col");
+    this.students = document.getElementsByClassName("student");
     this.pullValidData();
+    controller.collectDaysMissed();
+    this.applyAttendance();
   },
 
-
   pullValidData : function () {
-    for(i=0 ; i<this.students.length; i++){
+    for(i=0 ; i<this.studentsNames.length; i++){
       let missedDays = 12;
-      let name = (this.students.item(i).innerHTML);
-      let children = this.students.item(i).childNodes;
-      for(j=0; j<children.length; j++){
-        if (children[j].checked === true) {
-        missedDays--;
+      let name = (this.studentsNames.item(i).innerHTML);
+      let boxes = this.students.item(i).children;
+      for (j=0; j<boxes.length; j++){
+        let current = boxes.item(j);
+        if (current.checked){
+          missedDays--;
+        }
       }
+        controller.passData(name, missedDays);
       }
-      controller.passData(name, missedDays);
-    }
-  }
+    },
 
-}
+  applyAttendance : function() {
+    for(i=0; i<this.daysMissedColumn.length; i++) {
+      this.daysMissedColumn.item(i).innerHTML = controller.daysMissedArray[i];
+    }
+  },
+
+};
 controller.init()
